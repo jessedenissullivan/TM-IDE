@@ -1,16 +1,13 @@
 import Tkinter as tk
 from PIL import Image, ImageTk
 
-class Main(tk.Frame):
-	explanation = "Welcome to the Turing Machine editor!\n\n\
-This is the main screen.\n\
-Press enter to step through the turing machine.  \
-The current state is highlighted in red while the computational history (configurations) are \
-on the left.\n\
+class Edit(tk.Frame):
+	explanation = "\
+Welcome to the Turing Machine editor!\n\
+This is the edit screen.  \
 \n\
-To edit the turing machine, press e\n\
-To quit the program, press q\n\
-to reset the turing machine, press r"
+To clear all states and transitions, enter 'clear'\n\
+To add a state all states and transitions, enter 'clear'\n"
 
 	def __init__(self, master):
 		tk.Frame.__init__(self, master)
