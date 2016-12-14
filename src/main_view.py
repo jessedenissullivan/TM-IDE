@@ -15,6 +15,8 @@ to reset the turing machine, press r"
 	def __init__(self, master):
 		tk.Frame.__init__(self, master)
 
+		self.controller = master
+
 		self.draw()
 
 	def draw(self):
@@ -26,3 +28,17 @@ to reset the turing machine, press r"
 
 		self.explanation_label = tk.Label(self, text=self.explanation, justify=tk.LEFT, wraplength=400)	
 		self.explanation_label.grid(row=0, column=0, sticky=tk.NSEW)
+
+		# draw computational history to comp_history label on screen
+		self.comp_hist = tk.Listbox(self)
+
+		# init comp history and draw
+		self.comp_hist.insert(tk.END, "Computation History:")
+		self.comp_hist.grid(row=1, column=0, sticky='news')
+
+	# update all new values
+	def update(self, new_config=None, new_state_diag=None):
+		if new_config:
+			self.comp_hist.insert(tk.END, new_config)
+		if new_state_diag:
+			pass
