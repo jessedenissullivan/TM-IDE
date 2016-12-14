@@ -1,4 +1,29 @@
+from pprint import PrettyPrinter
 import pdb
+from graphviz import Digraph
+
+pp = PrettyPrinter()
+
+# Draw nodes in graphviz graph
+def add_nodes(graph, nodes):
+	print('add_nodes')
+	for n in nodes:
+		print n
+		if isinstance(n, tuple):
+			graph.node(*n[0], **n[1])
+		else:
+			graph.node(*n)
+	return graph
+
+# Draw edges in graphviz graph
+def add_edges(graph, edges):
+	print('add_edges')
+	for e in edges:
+		if isinstance(e[0], tuple):
+			graph.edge(*e[0], **e[1])
+		else:
+			graph.edge(*e)
+	return graph
 
 # Model TM for TM-SIM
 # binds following:
@@ -100,6 +125,8 @@ class Model(object):
 		if ('0', None) in self.delta:
 			self.currstate = self.delta['0',None][0], self.tape[self.head]  # set currstate to init state of TM (what 0 points to and first char of tape)
 
+		self.print_state_diagram()
+
 	# manually add new delta transition to TM
 	# called from edit screen
 	def add_delta(self, userInput):
@@ -152,6 +179,7 @@ class Model(object):
 	# Advance TM one step, mapped to enter in main
 	# returns print out of configuration after step
 	def step_TM(self):
+		pp.pprint(vars(self))
 		# current state is an accept or reject state, reset TM
 		if self.currstate[0] in self.accept or self.currstate[0] in self.reject:
 			self.reset_tm()
@@ -184,6 +212,9 @@ Restarting the turing machine." % (self.currstate[0], self.currstate[1])
 		# set new current state
 		self.currstate = self.nextstep[0], self.tape[self.head]
 
+		# print new state diagram
+		self.print_state_diagram()
+
 		# if sim now in accept state, inform user
 		if self.currstate[0] in self.accept or self.currstate[0] in self.reject:
 			return "\nThe turing machine is finished\nPressing enter will restart the turing machine."
@@ -210,3 +241,45 @@ Restarting the turing machine." % (self.currstate[0], self.currstate[1])
 
 		# return new configure
 		return t
+
+	# print state diagram of current configuration
+	# draw state diagram to the screens folder with title temp
+	def print_state_diagram(self):
+		print('model_print_state_diagram')
+		dot = Digraph()
+		states = []
+		transitions = []
+
+		for s in self.states:
+			if s in self.accept:
+				label = (str(s), {'label':"q_accept"})
+			elif s in self.reject:
+				label = (str(s), {'label':"q_reject"})
+			else:
+				label = (str(s), {'label':str(s)})
+
+			if s == self.currstate[0]:
+				label[1]['color'] = 'red'
+				label[1]['weight'] = '5'
+
+			states += [label]
+
+		for preimage, image in self.delta.iteritems():
+			if preimage[1]:
+				label = u'%s \u2192 ' % (max(preimage[1], ''))
+				
+				if image[1]:
+					label += u'%s,' % (max(image[1],''))
+
+				if image[2]>0:
+					label += u'R'
+				elif image[2]==0:
+					label += u'S'
+				elif image[2]<0:
+					label += u'L'
+				
+				key = str(preimage[0]), str(image[0])
+				transitions += [ ( (key), {'label':label } ) ]
+
+		dot.format = 'gif'
+		add_edges(add_nodes(dot, states), transitions).render('imgs/temp')

@@ -27,7 +27,7 @@ to reset the turing machine, press r"
 		self.state_diag_label.grid(row=0, column=1, rowspan=2, sticky=tk.NSEW)
 
 		self.explanation_label = tk.Label(self, text=self.explanation, justify=tk.LEFT, wraplength=400)	
-		self.explanation_label.grid(row=0, column=0, sticky=tk.NSEW)
+		self.explanation_label.grid(row=0, column=0, sticky='nw')
 
 		# draw computational history to comp_history label on screen
 		self.comp_hist = tk.Listbox(self)
@@ -41,4 +41,7 @@ to reset the turing machine, press r"
 		if new_config:
 			self.comp_hist.insert(tk.END, new_config)
 		if new_state_diag:
-			pass
+			# update state diagram
+			image = Image.open('./imgs/temp.gif')
+			self.image = ImageTk.PhotoImage(image)
+			self.state_diag_label.configure(image = self.image)

@@ -6,14 +6,13 @@ from edit_view import *
 from model import *
 
 class Controller(tk.Tk):
-	def __init__(self):
+	def __init__(self, *args, **kwargs):
 		tk.Tk.__init__(self)
 
-		self.model = Model()
+		self.model = Model(*args, **kwargs)
 
 		self.frames = {}
 		for F in (Main, Edit):
-			pdb.set_trace()
 			self.frames[F.__name__] = F(self)
 			self.frames[F.__name__].grid(row=0, column=0, sticky='news')
 
@@ -21,14 +20,13 @@ class Controller(tk.Tk):
 
 		self.bind('<Return>', self.step_model)
 
-		
 		self.show_frame('Main')
 
 	# switch view to requested view
 	def show_frame(self, page_name):
-		pdb.set_trace()
 		self.frames[page_name].tkraise()
 
+	# step model, update comp history on main view
 	def step_model(self, event):
 		new_config = self.model.step_TM()
-		self.main.update(new_config)
+		self.frames['Main'].update(new_config=new_config, new_state_diag="./imgs/temp.gif")
