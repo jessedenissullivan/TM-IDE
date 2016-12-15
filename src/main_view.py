@@ -17,15 +17,24 @@ to reset the turing machine, press r"
 
 		self.controller = master
 
+		self.bind('<Return>', self.controller.step_model)
+		self.bind('q', self.controller.quit)
+		self.bind('r', self.controller.model.reset_tm)
+
 		self.draw()
+
+	def quit(self):
+		self.controller.destroy()
 
 	def draw(self):
 		image = Image.open("./imgs/temp.gif") # path to image is relative to where prog is called from
 		self.image = ImageTk.PhotoImage(image)
 
+		# draw state diagram
 		self.state_diag_label = tk.Label(self, image=self.image)	
 		self.state_diag_label.grid(row=0, column=1, rowspan=2, sticky=tk.NSEW)
 
+		# draw explanation of screen and key bindings
 		self.explanation_label = tk.Label(self, text=self.explanation, justify=tk.LEFT, wraplength=400)	
 		self.explanation_label.grid(row=0, column=0, sticky='nw')
 
@@ -39,6 +48,7 @@ to reset the turing machine, press r"
 	# update all new values
 	def update(self, new_config=None, new_state_diag=None):
 		if new_config:
+			# add current config to comp history
 			self.comp_hist.insert(tk.END, new_config)
 		if new_state_diag:
 			# update state diagram

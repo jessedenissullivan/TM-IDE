@@ -169,6 +169,20 @@ class Model(object):
 		if valid:
 			self.delta[state1, read] = state2, write, shift
 
+	# clear TM (not tape)
+	def clear(self):
+		# State variables of 7-tuple
+		self.states = {'0'}			# 0 is always the start state
+		self.accept = set()
+		self.reject = set()
+		self.start = 0
+		self.head = 0 		# this turing machine does not have an infinite number of blanks on either side, they are added dynamically 
+		self.tape = []
+		self.delta = {}
+		self.sigma = {}
+		self.gamma = {}
+
+
 	# reintialize TM with original tape, state, and head pos
 	def reset_tm(self, event=None):
 		self.tape = self.initial_tape
@@ -283,3 +297,21 @@ Restarting the turing machine." % (self.currstate[0], self.currstate[1])
 
 		dot.format = 'gif'
 		add_edges(add_nodes(dot, states), transitions).render('imgs/temp')
+
+	# return list of delta transitions
+	def print_deltas(self):
+		delta_str = ""
+		ordered_dict = sorted([x for x in self.delta.keys()])
+		for x in ordered_dict:
+			preimg = x
+			img = self.delta[x]
+			delta_str += u"%s,%s \u2192 " % (preimg[0], max(' ',preimg[1]))
+			delta_str += u"%s,%s," % (img[0], max(' ',img[1]))
+			if img[2] > 0:
+				delta_str += "R\n"
+			elif img[2] < 0:
+				delta_str += "L\n"
+			else:
+				delta_str += "S\n"
+
+		return delta_str
