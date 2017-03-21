@@ -11,7 +11,7 @@ class Controller(tk.Tk):
 		tk.Tk.__init__(self)
 
 		# init model, all command line args passed to init of model (machine and tape)
-		self.model = Model(*args, **kwargs)
+		self.model = Model(controller = self, *args, **kwargs)
 
 		# Key bindings for each window { <window name> : { <key> : <function> } }
 		self.bindings = {
@@ -72,6 +72,7 @@ class Controller(tk.Tk):
 	# update comp history on main view
 	# update state diagram on main view
 	def step_model(self, event):
+		print("step model")
 		new_config = self.model.step_TM()
 		self.frames['Main'].update(new_config=new_config, new_state_diag="./imgs/temp.gif")
 
@@ -79,6 +80,7 @@ class Controller(tk.Tk):
 	# update comp history on main view
 	# update state diagram on main view
 	def reset_model(self, event):
+		print("reset model")
 		# reset model
 		self.model.reset_tm()
 		
@@ -87,5 +89,5 @@ class Controller(tk.Tk):
 		self.frames['Main'].comp_hist.insert(tk.END, "Computation History:")
 		
 		# reset state diagram
-		self.model.print_state_diagram()
+		#self.model.print_state_diagram()
 		self.frames['Main'].update(new_state_diag="./imgs/temp.gif")

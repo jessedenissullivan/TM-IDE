@@ -2,13 +2,13 @@ from pprint import PrettyPrinter
 import pdb
 from graphviz import Digraph
 
-pp = PrettyPrinter()
+pprint = PrettyPrinter()
 
 # Draw nodes in graphviz graph
 def add_nodes(graph, nodes):
 	print('add_nodes')
 	for n in nodes:
-		print n
+		#print n
 		if isinstance(n, tuple):
 			graph.node(*n[0], **n[1])
 		else:
@@ -32,7 +32,9 @@ class Model(object):
 	# Classes used during computation
 	comp_hist = 'Computational History:'
 
-	def __init__(self, machine=None, tape=None):
+	def __init__(self, controller, machine=None, tape=None):
+		self.controller = controller
+
 		# State variables of 7-tuple
 		self.states = {'0'}			# 0 is always the start state
 		self.accept = set()
@@ -94,6 +96,7 @@ class Model(object):
 				label = line.split('label=')[1].split()[0]
 				
 				if 'start' in label:									#  label is marked as start state, add trans from 0 to here
+					print("Found start state")
 					self.delta[0,None] = line.split('[')[0].strip(), None, 0
 				if 'accept' in label:									#  Node is accept state, add to set of accept states
 					self.accept |= {line.split('[')[0].strip()}
@@ -107,7 +110,7 @@ class Model(object):
 
 		if tape:				# load tape if one specified
 			with open(tape, 'r') as f:
-				self.initial_tape = list(f.readline())
+				self.initial_tape = f.readline()
 		else:					# else initialize everything to null sets
 			self.delta = {}
 			self.states = set([0])
@@ -117,13 +120,10 @@ class Model(object):
 
 		self.tape = self.initial_tape  # init tape to modifiable buffer
 
-		if self.tape:				# if there is a tape, get first char of it
-			firstchar = self.tape[self.head]
-		else:						# else first char is blank
-			firstchar = '_'
-
+		#pprint.pprint(self.delta)
 		if ('0', None) in self.delta:
-			self.currstate = self.delta['0',None][0], self.tape[self.head]  # set currstate to init state of TM (what 0 points to and first char of tape)
+			# set currstate to init state of TM (what 0 points to and first char of tape)
+			self.currstate = self.delta['0', None][0], self.tape[self.head]  
 
 		self.print_state_diagram()
 
@@ -180,11 +180,11 @@ class Model(object):
 		self.tape = []
 		self.delta = {}
 		self.sigma = {}
-		self.gamma = {}
-
+		self.gamma = {}	
 
 	# reintialize TM with original tape, state, and head pos
 	def reset_tm(self, event=None):
+		print("reset tm")
 		self.tape = self.initial_tape
 		self.head = 0
 		self.currstate = self.delta['0',None][0], self.tape[self.head]
@@ -193,10 +193,11 @@ class Model(object):
 	# Advance TM one step, mapped to enter in main
 	# returns print out of configuration after step
 	def step_TM(self):
-		pp.pprint(vars(self))
+		print("step tm")
+		pprint.pprint("previous tm: " + self.tape)
 		# current state is an accept or reject state, reset TM
 		if self.currstate[0] in self.accept or self.currstate[0] in self.reject:
-			self.reset_tm()
+			self.controller.reset_model(event=None)
 
 		# get transition
 		try:
@@ -205,40 +206,49 @@ class Model(object):
 			self.comp_hist += "\nThe turing machine crashed\n\
 cannot transition from %s on %s.\n\
 Restarting the turing machine." % (self.currstate[0], self.currstate[1])
-			self.reset_tm()
+			self.reset_model()
+			pprint.pprint("Reset tm: " + self.tape)
+			return self.get_config()
 
 		# write char to tape if writing
 		if self.nextstep[1]:
-			self.tape[self.head] = self.nextstep[1]
-
-		# shift head if shifting
-		self.head += self.nextstep[2]
+			self.tape = self.tape[:self.head] + self.nextstep[1] + self.tape[self.head+1:]
 
 		# head over edge of right end of tape, add blank char to right of tape
-		if self.head == len(self.tape):
-			self.tape = self.tape + list('_')
+		if self.head == (len(self.tape)-1):
+			#pdb.set_trace()
+			self.tape += '_'
 		
 		# head over edge of left end of tape, add blank char to left of tape and inc head by 1
 		elif self.head == 0:
 			self.head += 1
-			self.tape = list('_') + self.tape
+			self.tape = '_' + self.tape
+
+		# shift head if shifting
+		self.head += self.nextstep[2]
 
 		# set new current state
-		self.currstate = self.nextstep[0], self.tape[self.head]
+		try:
+			self.currstate = self.nextstep[0], self.tape[self.head]
+		except:
+			pdb.set_trace()
 
 		# print new state diagram
 		self.print_state_diagram()
 
 		# if sim now in accept state, inform user
 		if self.currstate[0] in self.accept or self.currstate[0] in self.reject:
+			pprint.pprint("Halted tm: " + self.tape)
 			return "\nThe turing machine is finished\nPressing enter will restart the turing machine."
 		
 		# return next line of comp history
 		else:
+			pprint.pprint("Stepped tm: " + self.tape)
 			return self.get_config()
 
 	# Create current config and save to comp history
 	def get_config(self):
+		print("get config tm")
 		#  There is no tape or defined current state, return empty
 		if not self.tape or 'currstate' not in dir(self):
 			return
@@ -255,6 +265,7 @@ Restarting the turing machine." % (self.currstate[0], self.currstate[1])
 
 		# return new configure
 		return t
+
 
 	# print state diagram of current configuration
 	# draw state diagram to the screens folder with title temp

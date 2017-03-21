@@ -17,10 +17,6 @@ to reset the turing machine, press r"
 
 		self.controller = master
 
-		self.bind('<Return>', self.controller.step_model)
-		self.bind('q', self.controller.quit)
-		self.bind('r', self.controller.model.reset_tm)
-
 		self.draw()
 
 	def quit(self):
@@ -43,6 +39,7 @@ to reset the turing machine, press r"
 
 		# init comp history and draw
 		self.comp_hist.insert(tk.END, "Computation History:")
+		self.comp_hist.insert(tk.END, self.controller.model.get_config())
 		self.comp_hist.grid(row=1, column=0, sticky='news')
 
 	# update all new values
