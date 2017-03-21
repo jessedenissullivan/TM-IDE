@@ -185,8 +185,8 @@ class Model(object):
 	# reintialize TM with original tape, state, and head pos
 	def reset_tm(self, event=None):
 		print("reset tm")
-		self.tape = self.initial_tape
-		self.head = 0
+		#self.tape = self.initial_tape
+		#self.head = 0
 		self.currstate = self.delta['0',None][0], self.tape[self.head]
 		self.comp_hist = 'Computational History:'
 
